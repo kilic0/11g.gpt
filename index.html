@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11-G Bilgi Botu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700&display=swap');
+
+        :root {
+            --bg: #0f0f0f;
+            --surface: #1a1a1a;
+            --surface2: #242424;
+            --accent: #e53935;
+            --accent2: #ff8f00;
+            --text: #f0f0f0;
+            --text-dim: #888;
+            --user-msg: #1b5e20;
+            --bot-msg: #1e1e1e;
+            --border: #2e2e2e;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* ─── SELECTION SCREEN ─── */
+        #selection-screen {
+            width: 100%;
+            max-width: 520px;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            animation: fadeUp 0.5s ease;
+        }
+
+        .select-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 36px;
+            letter-spacing: 3px;
+            color: var(--accent);
+            text-align: center;
+            text-shadow: 0 0 20px rgba(229,57,53,0.4);
+        }
+
+        .select-subtitle {
+            color: var(--text-dim);
+            font-size: 14px;
+            text-align: center;
+            margin-top: -16px;
+        }
+
+        .characters-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            width: 100%;
+        }
+
+        .char-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .char-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            z-index: 0;
+        }
+
+        .char-card:hover::before { opacity: 0.08; }
+        .char-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(229,57,53,0.2);
+        }
+
+        .char-card.selected {
+            border-color: var(--accent);
+            background: #2a1a1a;
+        }
+
+        .char-card.selected::before { opacity: 0.12; }
+
+        .char-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--border);
+            transition: border-color 0.25s ease;
+            z-index: 1;
+            background: var(--surface2);
+            display: block;
+            flex-shrink: 0;
+        }
+
+        .char-card:hover .char-avatar,
+        .char-card.selected .char-avatar {
+            border-color: var(--accent);
+        }
+
+        .char-name {
+            font-weight: 700;
+            font-size: 14px;
+            text-align: center;
+            z-index: 1;
+            color: var(--text);
+        }
+
+        .char-tag { display: none; }
+
+        .start-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 14px 50px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(229,57,53,0.3);
+        }
+
+        .start-btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 6px 28px rgba(229,57,53,0.5);
+        }
+
+        .start-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ─── CHAT SCREEN ─── */
+        #chat-screen {
+            display: none;
+            width: 100%;
+            max-width: 460px;
+            height: 88vh;
+            background: var(--surface);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            flex-direction: column;
+            overflow: hidden;
+            animation: fadeUp 0.4s ease;
+        }
+
+        .chat-header {
+            background: #141414;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-back {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 4px 8px;
+        }
+
+        .header-back:hover { color: var(--accent); }
+
+        .header-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .header-info { flex: 1; }
+
+        .header-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 1px;
+            color: var(--accent);
+        }
+
+        .header-sub {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 18px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .message {
+            max-width: 78%;
+            padding: 11px 16px;
+            border-radius: 16px;
+            font-size: 14.5px;
+            line-height: 1.5;
+            animation: fadeUp 0.3s ease;
+        }
+
+        .bot-message {
+            background: var(--bot-msg);
+            border: 1px solid var(--border);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-message {
+            background: var(--user-msg);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 14px;
+            background: #141414;
+            border-top: 1px solid var(--border);
+            gap: 10px;
+            align-items: center;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 22px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            outline: none;
+            font-size: 14px;
+            font-family: 'Nunito', sans-serif;
+            transition: border-color 0.2s;
+        }
+
+        #user-input:focus { border-color: var(--accent); }
+
+        #send-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+        }
+
+        #send-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 16px rgba(229,57,53,0.4);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing {
+            color: var(--text-dim);
+            font-size: 13px;
+            font-style: italic;
+            padding-left: 4px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* selected checkmark */
+        .char-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            color: var(--accent);
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════════ SELECTION SCREEN ════════════ -->
+<div id="selection-screen">
+    <div class="select-title">11-G Veritabanı</div>
+    <div class="select-subtitle">Konuşmak istediğin kişiyi seç</div>
+
+    <div class="characters-grid" id="chars-grid">
+        <!-- Kartlar JS ile oluşturulacak -->
+    </div>
+
+    <button class="start-btn" id="start-btn" disabled onclick="startChat()">
+        BAŞLA
+    </button>
+</div>
+
+<!-- ════════════ CHAT SCREEN ════════════ -->
+<div id="chat-screen">
+    <div class="chat-header">
+        <button class="header-back" onclick="goBack()" title="Geri">&#8592;</button>
+        <div class="header-avatar" id="header-avatar"></div>
+        <div class="header-info">
+            <div class="header-name" id="header-name"></div>
+            <div class="header-sub" id="header-sub"></div>
+        </div>
+    </div>
+    <div class="chat-box" id="chat-box"></div>
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Anahtar kelime yaz..." onkeypress="handleKeyPress(event)">
+        <button id="send-btn" onclick="processInput()">&#10148;</button>
+    </div>
+</div>
+
+<script>
+    // ─── KARAKTERLERİN VERİSİ ───
+    const characters = [
+        {
+            id: "poyraz",
+            name: "Poyraz",
+            photo: "https://i.pravatar.cc/150?img=11",
+            tag: "Kimya & İngilizce",
+            color: "#1565c0",
+            intro: "Selam! Ben Poyraz. Kimya, İngilizce hakkında sorabilirsin!",
+            rules: [
+                { keys: ["kimya", "chemistry"], resp: "Kimya benim göz bebeğim! Reaksiyonlar, elementler, her şey." },
+                { keys: ["ingilizce", "english", "language"], resp: "İngilizcede epey iyiyim, kıvırcık saçlı bir kimya aşığıyım 😄" },
+                { keys: ["saç", "görünüş", "kıvırcık"], resp: "Evet, kıvırcık saçlarım benim ayırt edici özelliğim!" },
+                { keys: ["matematik"], resp: "Matematik fena değil ama kimya kadar heyecan vermiyor benim için." },
+            ],
+            fallback: "Hmm bilmiyorum. Kimya veya İngilizce gibi konular dene!"
+        },
+        {
+            id: "melih",
+            name: "Melih",
+            photo: "https://i.pravatar.cc/150?img=3",
+            tag: "Matematik Dehası",
+            color: "#6a1b9a",
+            intro: "Merhaba! Ben Melih. Matematik hakkında her şeyi sorabilirsin.",
+            rules: [
+                { keys: ["matematik", "math", "sayı", "hesap"], resp: "Matematik benim tutkum! IQ'su yüksek biri olarak söylüyorum 😎" },
+                { keys: ["iq", "zeka", "akıllı"], resp: "Evet, IQ'm oldukça yüksek diyorlar. Mütevazıyım tabii 😁" },
+                { keys: ["kimya"], resp: "Kimyayı biraz bilirim ama Poyraz'a sor daha iyi." },
+                { keys: ["fizik"], resp: "Fizik tamam, matematik ile bağlantısı güçlü." },
+            ],
+            fallback: "Bilmiyorum. Matematik veya IQ gibi kelimeler dene!"
+        },
+        {
+            id: "emirhan",
+            name: "Emirhan",
+            photo: "emirgan.png",
+            tag: "İyi Niyetli",
+            color: "#e65100",
+            intro: "Selam... Ben Emirhan. Sorarsan cevaplarım, belki 😅",
+            rules: [
+                { keys: ["iq", "zeka", "aptal"], resp: "Tamam tamam, belki IQ'm çok yüksek değil ama kalp temizliği önemli!" },
+                { keys: ["ders", "okul", "sınıf"], resp: "Dersler... var ya... zor oluyorlar bazen. Çoğu zaman 😅" },
+                { keys: ["oyun", "game"], resp: "Oyun? O konuda konuşabiliriz! Derslerden daha iyi." },
+                { keys: ["matematik"], resp: "Matematik... biz pek anlaşamıyoruz maalesef." },
+            ],
+            fallback: "Bilmiyorum... zaten çok şey bilmiyorum 😅"
+        },
+        {
+            id: "aksel",
+            name: "Aksel",
+            photo: "https://i.pravatar.cc/150?img=59",
+            tag: "Derssiz Felsefeci",
+            color: "#37474f",
+            intro: "Ne var ne yok. Ben Aksel. Ders falan sormayın 😒",
+            rules: [
+                { keys: ["sigara", "nikotin", "duman"], resp: "Evet, nikotin ve ben iyi arkadaşlarız. Yargılamayın." },
+                { keys: ["ders", "matematik", "kimya", "fizik", "okul"], resp: "Ders mi? Hiçbirini sevmiyorum, doğrudan söyleyeyim." },
+                { keys: ["hayat", "felsefe", "anlam"], resp: "Asıl soru bu işte. Hayatın anlamı... ve bir sigara." },
+                { keys: ["bağımlılık"], resp: "Bağımlılık mı? Herkesin bir şeyi var, benimki bu." },
+            ],
+            fallback: "Bilmiyorum ve umursamıyorum açıkçası 😐"
+        },
+        {
+            id: "kilic",
+            name: "Kılıç",
+            photo: "https://i.pravatar.cc/150?img=7",
+            tag: "Dijital & Matematik",
+            color: "#00695c",
+            intro: "Hey! Ben Kılıç. Dijital ve matematik hakkında konuşabiliriz!",
+            rules: [
+                { keys: ["dijital", "digital", "teknoloji", "kod", "yazılım"], resp: "Dijital konular benim alanım! Teknoloji harika bir şey." },
+                { keys: ["matematik", "math"], resp: "Matematik güzel, dijital ile birleşince süper oluyor!" },
+                { keys: ["fizik"], resp: "FİZİK! Hayır hayır. Beni fizikten uzak tutun lütfen 😤" },
+                { keys: ["kimya"], resp: "Kimya... orta halli. Ne çok sever ne nefret ederim." },
+            ],
+            fallback: "Hmm bilmiyorum. Dijital veya matematik dene!"
+        },
+    ];
+
+    let selectedChar = null;
+
+    // ─── KARTLARI OLUŞTUR ───
+    function buildCards() {
+        const grid = document.getElementById('chars-grid');
+        characters.forEach(ch => {
+            const card = document.createElement('div');
+            card.className = 'char-card';
+            card.id = 'card-' + ch.id;
+            card.onclick = () => selectChar(ch.id);
+            card.innerHTML = `
+                <img class="char-avatar" src="${ch.photo}" alt="${ch.name}" style="border-color: ${ch.color};">
+                <div class="char-name">${ch.name}</div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function selectChar(id) {
+        // Öncekini temizle
+        document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById('card-' + id).classList.add('selected');
+        selectedChar = characters.find(c => c.id === id);
+        document.getElementById('start-btn').disabled = false;
+    }
+
+    function startChat() {
+        if (!selectedChar) return;
+
+        // Header güncelle
+        document.getElementById('header-avatar').innerHTML = `<img src="${selectedChar.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        document.getElementById('header-avatar').style.borderColor = selectedChar.color;
+        document.getElementById('header-name').textContent = selectedChar.name;
+        document.getElementById('header-sub').textContent = selectedChar.tag;
+
+        // Chat ekranına geç
+        document.getElementById('selection-screen').style.display = 'none';
+        const cs = document.getElementById('chat-screen');
+        cs.style.display = 'flex';
+
+        // Intro mesajı
+        const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML = '';
+        appendMessage(selectedChar.intro, 'bot');
+    }
+
+    function goBack() {
+        document.getElementById('chat-screen').style.display = 'none';
+        const ss = document.getElementById('selection-screen');
+        ss.style.display = 'flex';
+        ss.style.animation = 'none';
+        setTimeout(() => ss.style.animation = 'fadeUp 0.4s ease', 10);
+    }
+
+    // ─── CHAT LOJİĞİ ───
+    function processInput() {
+        const inputField = document.getElementById('user-input');
+        const raw = inputField.value.trim();
+        if (raw === '' || !selectedChar) return;
+
+        appendMessage(raw, 'user');
+        inputField.value = '';
+
+        // Typing indicator
+        const chatBox = document.getElementById('chat-box');
+        const typing = document.createElement('div');
+        typing.className = 'message bot-message typing';
+        typing.id = 'typing-indicator';
+        typing.textContent = selectedChar.name + ' yazıyor...';
+        chatBox.appendChild(typing);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        setTimeout(() => {
+            const ind = document.getElementById('typing-indicator');
+            if (ind) ind.remove();
+            const resp = cevapVer(raw.toLowerCase(), selectedChar);
+            appendMessage(resp, 'bot');
+        }, 600);
+    }
+
+    function handleKeyPress(e) {
+        if (e.key === 'Enter') processInput();
+    }
+
+    function appendMessage(text, sender) {
+        const chatBox = document.getElementById('chat-box');
+        const div = document.createElement('div');
+        div.className = 'message ' + (sender === 'user' ? 'user-message' : 'bot-message');
+        div.textContent = text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function cevapVer(msg, ch) {
+        for (const rule of ch.rules) {
+            if (rule.keys.some(k => msg.includes(k))) return rule.resp;
+        }
+        return ch.fallback;
+    }
+
+    // ─── BAŞLAT ───
+    buildCards();
+</script>
+
+</body>
+</html>

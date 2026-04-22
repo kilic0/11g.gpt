@@ -33,7 +33,6 @@
             overflow: hidden;
         }
 
-        /* ─── SELECTION SCREEN ─── */
         #selection-screen {
             width: 100%;
             max-width: 520px;
@@ -160,7 +159,6 @@
             transform: none;
         }
 
-        /* ─── CHAT SCREEN ─── */
         #chat-screen {
             display: none;
             width: 100%;
@@ -318,7 +316,6 @@
             50% { opacity: 1; }
         }
 
-        /* selected checkmark */
         .char-card.selected::after {
             content: '✓';
             position: absolute;
@@ -333,21 +330,13 @@
 </head>
 <body>
 
-<!-- ════════════ SELECTION SCREEN ════════════ -->
 <div id="selection-screen">
     <div class="select-title">11-G Veritabanı</div>
     <div class="select-subtitle">Konuşmak istediğin kişiyi seç</div>
-
-    <div class="characters-grid" id="chars-grid">
-        <!-- Kartlar JS ile oluşturulacak -->
-    </div>
-
-    <button class="start-btn" id="start-btn" disabled onclick="startChat()">
-        BAŞLA
-    </button>
+    <div class="characters-grid" id="chars-grid"></div>
+    <button class="start-btn" id="start-btn" disabled onclick="startChat()">BAŞLA</button>
 </div>
 
-<!-- ════════════ CHAT SCREEN ════════════ -->
 <div id="chat-screen">
     <div class="chat-header">
         <button class="header-back" onclick="goBack()" title="Geri">&#8592;</button>
@@ -365,7 +354,6 @@
 </div>
 
 <script>
-    // ─── KARAKTERLERİN VERİSİ ───
     const characters = [
         {
             id: "poyraz",
@@ -378,7 +366,7 @@
                 { keys: ["kimya", "chemistry"], resp: "Kimya benim göz bebeğim! Reaksiyonlar, elementler, her şey." },
                 { keys: ["ingilizce", "english", "language"], resp: "İngilizcede epey iyiyim, kıvırcık saçlı bir kimya aşığıyım 😄" },
                 { keys: ["saç", "görünüş", "kıvırcık"], resp: "Evet, kıvırcık saçlarım benim ayırt edici özelliğim!" },
-                { keys: ["matematik"], resp: "Matematik fena değil ama kimya kadar heyecan vermiyor benim için." },
+                { keys: ["matematik"], resp: "Matematik fena değil ama kimya kadar heyecan vermiyor benim için." }
             ],
             fallback: "Hmm bilmiyorum. Kimya veya İngilizce gibi konular dene!"
         },
@@ -390,10 +378,10 @@
             color: "#6a1b9a",
             intro: "Merhaba! Ben Melih. Matematik hakkında her şeyi sorabilirsin.",
             rules: [
-                { keys: ["matematik", "math", "sayı", "hesap"], resp: "matematigi severim sakın türkçe falan deme ama 😎" },
+                { keys: ["matematik", "math", "sayı", "hesap"], resp: "matematiği severim sakın türkçe falan deme ama 😎" },
                 { keys: ["iq", "zeka", "akıllı"], resp: "bana akılsız diyolar ama bilmiyolarki iq 140 falan  😁" },
                 { keys: ["kimya"], resp: "bana niye soruyon amk git poyraza sor." },
-                { keys: ["fizik"], resp: "Fizik tamam, matematik ile bağlantısı güçlü." },
+                { keys: ["fizik"], resp: "Fizik tamam, matematik ile bağlantısı güçlü." }
             ],
             fallback: "Bilmiyorum. Matematik veya IQ gibi kelimeler dene!"
         },
@@ -409,7 +397,7 @@
                 { keys: ["ders", "okul", "sınıf"], resp: "Dersler... var ya... zor oluyorlar bazen. Çoğu zaman ahfafhaohfaoshs 😅" },
                 { keys: ["oyun", "game"], resp: "Oyun? O konuda konuşabiliriz! Derslerden daha iyi." },
                 { keys: ["matematik"], resp: "Matematik... biz pek anlaşamıyoruz maalesef." },
-                { keys: ["extended essay"], resp: "Matematik... biz pek anlaşamıyoruz maalesef." },
+                { keys: ["extended essay"], resp: "Matematik... biz pek anlaşamıyoruz maalesef." }
             ],
             fallback: "Bilmiyorum... zaten çok şey bilmiyorum 😅"
         },
@@ -425,14 +413,14 @@
                 { keys: ["ders", "matematik", "kimya", "fizik", "okul"], resp: "Ders mi? Hiçbirini sevmiyorum, doğrudan söyleyeyim." },
                 { keys: ["hayat", "felsefe", "anlam"], resp: "Asıl soru bu işte. Hayatın anlamı... ve bir sigara." },
                 { keys: ["bağımlılık"], resp: "Bağımlılık mı? Herkesin bir şeyi var, benimki bu." },
-                { keys: ["kap"], resp: "AHAHAHALSHFASHFL KPAKAYAA." },
+                { keys: ["kap"], resp: "AHAHAHALSHFASHFL KPAKAYAA." }
             ],
             fallback: "Bilmiyorum ve umursamıyorum açıkçası 😐"
         },
         {
             id: "kilic",
             name: "Kılıç",
-            photo: "kilic.png,
+            photo: "kilic.png",
             tag: "Dijital & Matematik",
             color: "#00695c",
             intro: "Hey! Ben Kılıç. ne lazım söyle!",
@@ -440,15 +428,14 @@
                 { keys: ["dijital", "digital", "teknoloji", "kod", "yazılım"], resp: "OLUM DİGİTAL EXTENDED ESSAYIM VAR AĞLA EMİRHAN." },
                 { keys: ["matematik", "math"], resp: "Matematik güzel, aptal emirhan yapamaz!" },
                 { keys: ["fizik"], resp: "FİZİK! Hayır hayır. Beni fizikten uzak tutun lütfen 😤" },
-                { keys: ["kimya"], resp: "kimya fiziktende kötü fiziği terih ederim." },
+                { keys: ["kimya"], resp: "kimya fiziktende kötü fiziği terih ederim." }
             ],
             fallback: "Hmm bilmiyorum. kapkaya hakkında konuşabiliriz!"
-        },
+        }
     ];
 
     let selectedChar = null;
 
-    // ─── KARTLARI OLUŞTUR ───
     function buildCards() {
         const grid = document.getElementById('chars-grid');
         characters.forEach(ch => {
@@ -456,16 +443,14 @@
             card.className = 'char-card';
             card.id = 'card-' + ch.id;
             card.onclick = () => selectChar(ch.id);
-            card.innerHTML = `
-                <img class="char-avatar" src="${ch.photo}" alt="${ch.name}" style="border-color: ${ch.color};">
-                <div class="char-name">${ch.name}</div>
-            `;
+            card.innerHTML =
+                '<img class="char-avatar" src="' + ch.photo + '" alt="' + ch.name + '" style="border-color:' + ch.color + '">' +
+                '<div class="char-name">' + ch.name + '</div>';
             grid.appendChild(card);
         });
     }
 
     function selectChar(id) {
-        // Öncekini temizle
         document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
         document.getElementById('card-' + id).classList.add('selected');
         selectedChar = characters.find(c => c.id === id);
@@ -474,19 +459,13 @@
 
     function startChat() {
         if (!selectedChar) return;
-
-        // Header güncelle
-        document.getElementById('header-avatar').innerHTML = `<img src="${selectedChar.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        document.getElementById('header-avatar').innerHTML = '<img src="' + selectedChar.photo + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
         document.getElementById('header-avatar').style.borderColor = selectedChar.color;
         document.getElementById('header-name').textContent = selectedChar.name;
         document.getElementById('header-sub').textContent = selectedChar.tag;
-
-        // Chat ekranına geç
         document.getElementById('selection-screen').style.display = 'none';
         const cs = document.getElementById('chat-screen');
         cs.style.display = 'flex';
-
-        // Intro mesajı
         const chatBox = document.getElementById('chat-box');
         chatBox.innerHTML = '';
         appendMessage(selectedChar.intro, 'bot');
@@ -500,16 +479,12 @@
         setTimeout(() => ss.style.animation = 'fadeUp 0.4s ease', 10);
     }
 
-    // ─── CHAT LOJİĞİ ───
     function processInput() {
         const inputField = document.getElementById('user-input');
         const raw = inputField.value.trim();
         if (raw === '' || !selectedChar) return;
-
         appendMessage(raw, 'user');
         inputField.value = '';
-
-        // Typing indicator
         const chatBox = document.getElementById('chat-box');
         const typing = document.createElement('div');
         typing.className = 'message bot-message typing';
@@ -517,7 +492,6 @@
         typing.textContent = selectedChar.name + ' yazıyor...';
         chatBox.appendChild(typing);
         chatBox.scrollTop = chatBox.scrollHeight;
-
         setTimeout(() => {
             const ind = document.getElementById('typing-indicator');
             if (ind) ind.remove();
@@ -546,7 +520,6 @@
         return ch.fallback;
     }
 
-    // ─── BAŞLAT ───
     buildCards();
 </script>
 
